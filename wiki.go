@@ -127,7 +127,10 @@ func processDir(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	base := filepath.Dir(filepath.Clean(path))
+	// without cleaning path, it appears we sometimes put files in the . index
+	// instead of the ./ index
+	path = filepath.Clean(path)
+	base := filepath.Dir(path)
 
 	if strings.HasPrefix(path, *outPath) {
 		return filepath.SkipDir
