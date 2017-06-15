@@ -16,7 +16,7 @@ var (
 	inpath       = flag.String("path", "./", "Path to the root of your wiki src")
 	outPath      = flag.String("out", "./html", "Path to the output")
 	pdf          = flag.Bool("pdf", false, "Render PDFs")
-	excludeList  = flag.String("exclude", "html", "Exclusion comma separated list of files")
+	excludeList  = flag.String("exclude", "html,.git", "Exclusion comma separated list of files")
 	mediaList    = flag.String("media", "img,resources", "comma separated paths designated as media (to be copied)")
 	mediaNames   = make([]string, 0)
 	excludeNames = make([]string, 0)
@@ -129,18 +129,18 @@ func processDir(path string, info os.FileInfo, err error) error {
 
 	base := filepath.Dir(filepath.Clean(path))
 
-	if _, ok := indexes[path]; info.IsDir() && !ok {
-		indexes[path] = make([]string, 0)
-	}
-
 	if strings.HasPrefix(path, *outPath) {
-		return nil
+		return filepath.SkipDir
 	}
 
 	for _, name := range excludeNames {
 		if info.Name() == name {
-			return nil
+			return filepath.SkipDir
 		}
+	}
+
+	if _, ok := indexes[path]; info.IsDir() && !ok {
+		indexes[path] = make([]string, 0)
 	}
 
 	if info.IsDir() {
@@ -166,7 +166,7 @@ func processDir(path string, info os.FileInfo, err error) error {
 		}
 	}
 
-	if filepath.Ext(info.Name()) == ".adoc" {
+	if filepath.Ext(info.Name()) == ".adoc" && info.Name() != "_index.adoc" {
 		fileName := stripExt(info.Name())
 		outFile := filepath.Join(*outPath, filepath.Dir(pathRelOutput), fileName+".html")
 		indexes[base] = append(indexes[base], info.Name())
