@@ -1,0 +1,18 @@
+= wiki.adoc
+:icons: font
+
+A small utility to generate a "wiki" out of a tree of Asciidoc files.
+
+== Usage
+
+.Steps to success
+. Install the program using, `go get github.com/chrissexton/wiki.adoc`
+. Run the program against a tree of .adoc files, `wiki.adoc`
+. ???
+. Go enjoy a few beers.
+
+You should have a look at the `-media` switch for places to put binary/included files.
+
+== Is it good?
+
+It's probably not bad.
