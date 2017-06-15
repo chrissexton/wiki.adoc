@@ -88,7 +88,7 @@ func buildIndexes() {
 		// Run the build command
 		outFile := filepath.Join(*outPath, k, "index.html")
 		if _, err := os.Stat(outFile); err != nil {
-			buildFile(info, indexFile, outFile)
+			buildFileForce(info, indexFile, outFile, true)
 		}
 	}
 }
@@ -98,8 +98,12 @@ func stripExt(path string) string {
 }
 
 func buildFile(info os.FileInfo, inFile, outFile string) error {
+	return buildFileForce(info, inFile, outFile, false)
+}
+
+func buildFileForce(info os.FileInfo, inFile, outFile string, force bool) error {
 	buildFile, err := os.Stat(outFile)
-	if err != nil || buildFile.ModTime().Before(info.ModTime()) {
+	if err != nil || buildFile.ModTime().Before(info.ModTime()) || force {
 		err := exec.Command("asciidoctor", "-o", outFile, inFile).Run()
 		if err != nil {
 			log.Printf("Err on %s: %s", inFile, err)
@@ -108,7 +112,7 @@ func buildFile(info os.FileInfo, inFile, outFile string) error {
 	}
 	outFile = stripExt(outFile) + ".pdf"
 	buildFile, err = os.Stat(outFile)
-	if (err != nil || buildFile.ModTime().Before(info.ModTime())) && *pdf {
+	if (err != nil || buildFile.ModTime().Before(info.ModTime()) || force) && *pdf {
 		err := exec.Command("asciidoctor-pdf", "-o", outFile, inFile).Run()
 		if err != nil {
 			log.Printf("Err on %s: %s", inFile, err)
