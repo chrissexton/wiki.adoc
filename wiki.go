@@ -161,8 +161,9 @@ func processDir(path string, info os.FileInfo, err error) error {
 			err = cpCmd.Run()
 			if err != nil {
 				log.Printf("Err: cp -rf %s %s", path+"/", outFile)
+				return err
 			}
-			return err
+			return filepath.SkipDir
 		}
 	}
 
