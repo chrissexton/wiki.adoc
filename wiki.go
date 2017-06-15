@@ -60,11 +60,11 @@ func buildIndexes() {
 		}
 
 		// Don't want to write indexes unless there are .adocs or dirs
-		if len(files) == 0 && len(dirs) == 0 {
+		if len(files) == 0 && len(dirs) == 1 {
 			continue
 		}
 
-		f, err := os.OpenFile(indexFile, os.O_RDWR|os.O_CREATE, 0644)
+		f, err := os.OpenFile(indexFile, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -143,11 +143,11 @@ func processDir(path string, info os.FileInfo, err error) error {
 		indexes[path] = make([]string, 0)
 	}
 
+	pathRelOutput := strings.TrimLeft(path, *inpath)
+
 	if info.IsDir() {
 		indexes[base] = append(indexes[base], info.Name()+"/")
 	}
-
-	pathRelOutput := strings.TrimLeft(path, *inpath)
 
 	for _, name := range mediaNames {
 		if info.Name() == name && info.IsDir() {
