@@ -4,6 +4,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -20,11 +21,24 @@ var (
 	mediaList    = flag.String("media", "img,resources", "comma separated paths designated as media (to be copied)")
 	mediaNames   = make([]string, 0)
 	excludeNames = make([]string, 0)
+	requires     = reqList{}
 
 	indexes = make(map[string][]string)
 )
 
+type reqList []string
+
+func (r *reqList) Set(val string) error {
+	*r = append(*r, val)
+	return nil
+}
+
+func (r *reqList) String() string {
+	return fmt.Sprint(*r)
+}
+
 func main() {
+	flag.Var(&requires, "r", "Added require flags")
 	flag.Parse()
 
 	excludeNames = strings.Split(*excludeList, ",")
@@ -87,9 +101,7 @@ func buildIndexes() {
 
 		// Run the build command
 		outFile := filepath.Join(*outPath, k, "index.html")
-		if _, err := os.Stat(outFile); err != nil {
-			buildFileForce(info, indexFile, outFile, true)
-		}
+		buildFileForce(info, indexFile, outFile, true)
 	}
 }
 
@@ -104,7 +116,12 @@ func buildFile(info os.FileInfo, inFile, outFile string) error {
 func buildFileForce(info os.FileInfo, inFile, outFile string, force bool) error {
 	buildFile, err := os.Stat(outFile)
 	if err != nil || buildFile.ModTime().Before(info.ModTime()) || force {
-		err := exec.Command("asciidoctor", "-o", outFile, inFile).Run()
+		args := []string{"-o", outFile}
+		for _, r := range requires {
+			args = append(args, "-r", r)
+		}
+		args = append(args, inFile)
+		err := exec.Command("asciidoctor", args...).Run()
 		if err != nil {
 			log.Printf("Err on %s: %s", inFile, err)
 		}
@@ -113,7 +130,12 @@ func buildFileForce(info os.FileInfo, inFile, outFile string, force bool) error 
 	outFile = stripExt(outFile) + ".pdf"
 	buildFile, err = os.Stat(outFile)
 	if (err != nil || buildFile.ModTime().Before(info.ModTime()) || force) && *pdf {
-		err := exec.Command("asciidoctor-pdf", "-o", outFile, inFile).Run()
+		args := []string{"-o", outFile}
+		for _, r := range requires {
+			args = append(args, "-r", r)
+		}
+		args = append(args, inFile)
+		err := exec.Command("asciidoctor-pdf", args...).Run()
 		if err != nil {
 			log.Printf("Err on %s: %s", inFile, err)
 		}
