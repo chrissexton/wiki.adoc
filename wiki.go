@@ -59,6 +59,7 @@ func buildIndexes() {
 		indexFile := filepath.Join(k, "_index.adoc")
 		dirs := []string{}
 		files := []string{}
+		hasCustomIndex := false
 
 		if k != "." && k != "./" {
 			dirs = append(dirs, "../")
@@ -67,6 +68,8 @@ func buildIndexes() {
 		for _, f := range indexes[k] {
 			if strings.HasSuffix(f, "/") && f != "./" {
 				dirs = append(dirs, f)
+			} else if f == "index.adoc" {
+				hasCustomIndex = true
 			} else if f != "_index.adoc" && f != "./" {
 				// not sure why ./ was getting in here
 				files = append(files, f)
@@ -75,6 +78,11 @@ func buildIndexes() {
 
 		// Don't want to write indexes unless there are .adocs or dirs
 		if len(files) == 0 && len(dirs) == 1 {
+			continue
+		}
+
+		// If there is already an index, don't write our own
+		if hasCustomIndex {
 			continue
 		}
 
