@@ -47,3 +47,4 @@ Temporary Items
 # End of https://www.gitignore.io/api/go,macos
 .vscode
 debug
+wiki.adoc
